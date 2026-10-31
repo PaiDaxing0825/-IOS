@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import UniformTypeIdentifiers
 
 @main
 struct HRVCompanionApp: App {
@@ -8,6 +9,8 @@ struct HRVCompanionApp: App {
 
 struct Dashboard: View {
     @StateObject private var health = HealthStore()
+    @State private var importing = false
+    @State private var importError: String?
     var body: some View {
         NavigationStack {
             List {
@@ -32,6 +35,10 @@ struct Dashboard: View {
                 }
                 Section("连接状态") {
                     Text(health.message).font(.subheadline)
+                    Button("导入 HRV 文件（免费侧载可用）") { importing = true }
+                        .disabled(health.isLoading)
+                    Text("由快捷指令导出最近七天 HRV，再选择 CSV 或 TXT 文件。导入成功后替换当前显示的数据；退出 App 后需重新导入。")
+                        .font(.caption).foregroundStyle(.secondary)
                     Button {
                         Task { await health.connect() }
                     } label: {
@@ -73,6 +80,15 @@ struct Dashboard: View {
             }
             .navigationTitle("心息")
             .tint(.teal)
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.commaSeparatedText, .plainText]) { result in
+                switch result {
+                case .success(let url): health.importFile(url)
+                case .failure(let error): importError = error.localizedDescription
+                }
+            }
+            .alert("文件无法打开", isPresented: Binding(get: { importError != nil }, set: { if !$0 { importError = nil } })) {
+                Button("好") { importError = nil }
+            } message: { Text(importError ?? "") }
         }
     }
 }

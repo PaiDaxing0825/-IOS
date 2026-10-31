@@ -21,8 +21,8 @@ targets:
         INFOPLIST_KEY_NSHealthShareUsageDescription: 读取心率变异性，向你展示最新 HRV 和最近七天的记录。数据不会上传。
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
-        MARKETING_VERSION: '0.1.0'
-        CURRENT_PROJECT_VERSION: '1'
+        MARKETING_VERSION: '0.2.0'
+        CURRENT_PROJECT_VERSION: '2'
         CODE_SIGN_ENTITLEMENTS: Sources/HRVCompanion.entitlements
     dependencies:
       - sdk: HealthKit.framework
