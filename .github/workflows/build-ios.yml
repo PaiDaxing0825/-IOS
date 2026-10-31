@@ -1,0 +1,34 @@
+name: Build unsigned iOS app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install project generator
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Build for physical iPhone
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcodebuild -project HRVCompanion.xcodeproj -scheme HRVCompanion -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+      - name: Package unsigned IPA for AltStore
+        run: |
+          set -euo pipefail
+          mkdir -p output/Payload
+          cp -R build/Build/Products/Release-iphoneos/HRVCompanion.app output/Payload/
+          cd output
+          zip -qr HRVCompanion-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HRVCompanion-unsigned
+          path: output/HRVCompanion-unsigned.ipa
+          retention-days: 7
